@@ -1,0 +1,56 @@
+import discord
+import asyncio
+
+
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print('Logged in as')
+        print(self.user.name)
+        print(self.user.id)
+        print('---------')
+        self.player_list = []
+        self.player_id=[]
+
+    async def on_message(self, message):
+        if message.author.id == self.user.id:
+            return
+        if message.content.startswith('Escapebot'):
+                self.lancement = await message.channel.send('Qui participe ? ( utilise les réactions )')
+                await self.lancement.add_reaction('🆙')
+                await client.change_presence(activity=discord.Game(name='Creating Escape Game party !'))
+                # channel = await self.create_channel(message.guild)
+
+
+
+
+    async def on_reaction_add(self, reaction, user):
+        if user != self.user:
+            if reaction.emoji == '🆙':
+                if user.name in self.player_list:
+                    await reaction.message.channel.send('Tu es déjà dans la party !')
+                else:
+                    self.player_list.append(user.name)
+                    self.player_id.append(user.id)
+                    print(self.player_list, self.player_id)
+                    await reaction.message.channel.send('Il y a {} qui vient de rejoindre la party' .format(user.name))
+                if len(self.player_list) == 1:
+                    await reaction.message.channel.send('Un joueur sur quatre !')
+                    channel = await self.create_channel(reaction.message.guild)
+                if len(self.player_list) == 2:
+                    await reaction.message.channel.send('Deux joueurs sur quatre !')
+                if len(self.player_list) == 3:
+                    await reaction.message.channel.send('Trois joueurs sur quatre !')
+                if len(self.player_list) == 4:
+                    await reaction.message.channel.send('Quatre joueurs sur quatre ! \n Nous allons débuter !')
+
+
+    async def create_channel(self, guild):
+       perm = {guild.default_role: discord.PermissionOverwrite(read_messages=False),
+              guild.get_member(self.player_id[0]):
+                   discord.PermissionOverwrite(read_messages=True)}
+       if len(self.player_id) == 1:
+         test = await guild.create_text_channel('Temp channel', overwrites=perm, position=0, reason='Start Escape game', nsfw=False)
+
+
+client = MyClient()
+client.run('')
